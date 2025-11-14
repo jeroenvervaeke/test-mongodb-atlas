@@ -1,0 +1,10 @@
+# POC specific
+/tmp/poc-*.txt
+/tmp/*-injection-poc.txt
+/tmp/cluster-injection-poc.txt
+/tmp/username-injection-poc.txt
+/tmp/password-injection-poc.txt
+
+# Standard
+.DS_Store
+*.log
